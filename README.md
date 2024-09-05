@@ -1,3 +1,5 @@
+Chen (2010) - A life-cycle analysis of social security with housing
+these codes do a rough implementation of the baseline model, for explanation of what "rough" involves, see
 http://discourse.vfitoolkit.com/t/a-rough-guide-to-getting-inequality-in-olgs/219/18?u=robertdkirkby
 
 Original paper:
