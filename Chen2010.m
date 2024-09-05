@@ -24,8 +24,9 @@
 %         rate is 10.7 percent.22 This implies vartheta = 0.483."
 % I interpret this to mean that tau_p=0.107, and set b to balance the pension budget in eqm.
 % Chen (2010) relates b to vartheta in Definition 1 in appendix, confirming the above.
-% I eliminate vartheta from the model as it is not needed for anything (Chen uses it 
-% to hard-code a general eqm condition, but we can just brute force this easy enough).
+% I eliminate vartheta from the model as it is not needed for anything [Having seen codes of Chen2010, he sometimes fixed
+tau_p and solved for b, but sometimes fixed vartheta and solved for tau_p (and b) in eqm. This didn't make final paper, hence 
+why he has vartheta which is essentially redundant.].
 
 % Chen interpolates choice of assets, but forces choice of housing onto
 % grid (his Appendix A.2). Here both are on grid, but grid for assets is vastly larger than
