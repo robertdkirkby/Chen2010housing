@@ -218,9 +218,10 @@ simoptions=struct(); % defaults
 StationaryDist=StationaryDist_FHorz_Case1(jequaloneDist,AgeWeightParamNames,Policy,n_d,n_a,n_z,N_j,pi_z,Params,simoptions);
 
 %% AggVars
-FnsToEvaluate.K=@(aprime,hprime,a,h,z) a;
+FnsToEvaluate.A=@(aprime,hprime,a,h,z) a;
 FnsToEvaluate.N=@(aprime,hprime,a,h,z,kappaj) kappaj*z;
-FnsToEvaluate.H=@(aprime,hprime,a,h,z) h;
+FnsToEvaluate.H=@(aprime,hprime,a,h,z) h; % housing
+FnsToEvaluate.Hr=@(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b) (hprime==0)*Chen2010_HousingServicesFn(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b); % rental housing=housing services used by renters
 FnsToEvaluate.pensiontaxrevenue=@(aprime,hprime,a,h,z,tau_p,w,kappaj) tau_p*w*kappaj*z;
 FnsToEvaluate.pensionspend=@(aprime,hprime,a,h,z,agej,Jr,b) (agej>=Jr)*b;
 FnsToEvaluate.accidentalbeqleft=@(aprime,hprime,a,h,z,r,sj,delta_o) (1+r)*aprime*(1-sj)+(1-delta_o)*hprime*(1-sj);
@@ -235,7 +236,7 @@ Params.b=Params.b*(AggVars.pensiontaxrevenue.Mean/AggVars.pensionspend.Mean);
 %% Everything is working, now for general equilibrium
 GEPriceParamNames={'r','Tr'};
 
-GeneralEqmEqns.capitalmarkets=@(r,K,N,alpha,delta_k) r-(alpha*(K^(alpha-1))*(N^(1-alpha))-delta_k); % r=marginal product of capital, minus depreciation
+GeneralEqmEqns.capitalmarkets=@(r,A,N,alpha,delta_k,Hr,delta_r) r-(alpha*((A-Hr*(1-((r+delta_r)/(1+r))))^(alpha-1))*(N^(1-alpha))-delta_k); % r=marginal product of capital, minus depreciation; with K'=A'-Hr'*(1-p), and p=(r+delta_r)/(1+r);
 GeneralEqmEqns.accidentalbequests=@(Tr,accidentalbeqleft,n) Tr-accidentalbeqleft/(1+n); % Eqn A.2 from Appendix of Chen2010
 
 %% Alright, solve for the general eqm
@@ -258,7 +259,7 @@ FnsToEvaluate.TotalWealth=@(aprime,hprime,a,h,z) a+h; % NOT SURE IF THIS IS CORR
 FnsToEvaluate.LoanToValueRatio=@(aprime,hprime,a,h,z) (hprime>0)*abs(aprime/hprime);
 FnsToEvaluate.earnings=@(aprime,hprime,a,h,z,w,kappaj) w*kappaj*z;
 FnsToEvaluate.consumption=@(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b,Tr) Chen2010_ConsumptionFn(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b,Tr);
-FnsToEvaluate.housingservices=@(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b,Tr) Chen2010_HousingServicesFn(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b,Tr);
+FnsToEvaluate.housingservices=@(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b) Chen2010_HousingServicesFn(aprime,hprime,a,h,z,kappaj,r,tau_p,theta,upsilon,phi,alpha,delta_k,delta_o,delta_r,agej,Jr,b);
 
 
 % [V,Policy]=ValueFnIter_Case1_FHorz(n_d,n_a,n_z,N_j,d_grid, a_grid, z_grid_J, pi_z_J, ReturnFn, Params, DiscountFactorParamNames, [], vfoptions);
@@ -270,7 +271,8 @@ StationaryDist=StationaryDist_FHorz_Case1(jequaloneDist,AgeWeightParamNames,Poli
 AggVars=EvalFnOnAgentDist_AggVars_FHorz_Case1(StationaryDist,Policy, FnsToEvaluate,Params,[],n_d,n_a,n_z,N_j,d_grid,a_grid,z_grid,[],simoptions);
 AllStats=EvalFnOnAgentDist_AllStats_FHorz_Case1(StationaryDist,Policy, FnsToEvaluate,Params,[],n_d,n_a,n_z,N_j,d_grid,a_grid,z_grid,simoptions);
 
-Y=(AggVars.K.Mean^Params.alpha)*(AggVars.N.Mean^(1-Params.alpha)); % output
+K=AggVars.A.Mean-AggVars.Hr.Mean*(1-Params.p); % physical capital
+Y=(K^Params.alpha)*(AggVars.N.Mean^(1-Params.alpha)); % output
 
 % Chen (2010) Table 2 on page 605 reports the following
 fprintf('Quantitative properties of the benchmark economy \n')
@@ -278,14 +280,14 @@ fprintf('Quantitative properties of the benchmark economy \n')
 fprintf('Targeted Variables \n')
 fprintf('Payroll tax rate is %1.3f \n',Params.tau_p) % 0.107
 fprintf('r is %1.2f%% \n',100*Params.r) % 6.35%
-fprintf('K/Y is %1.3f \n',AggVars.K.Mean/Y) % 1.729
+fprintf('K/Y is %1.3f \n',K/Y) % 1.729
 fprintf('H/Y is %1.3f \n',AggVars.H.Mean/Y) % 1.075
 fprintf('Homeownership rate is %2.1f%% \n', 100*AggVars.Homeownership.Mean) % 65.0%
 fprintf('Nontargeted Variables \n')
 % fprintf('pH/(C+pH) is %2.1f \% \n',100*Params.p*AggVars.H.Mean/()) % 10.7% I SKIPPED AS CANT BE BOTHERED CREATING CONSUMPTION FN
-fprintf('Ho/(A+Ho) is %2.1f%% \n',100*AggVars.H.Mean/(AggVars.K.Mean+AggVars.H.Mean)) % 32.2%  % I think this is the correct calculation, not sure
+fprintf('Ho/(A+Ho) is %2.1f%% \n',100*AggVars.H.Mean/(AggVars.A.Mean+AggVars.H.Mean)) % 32.2%  % I think this is the correct calculation, not sure
 fprintf('Gini for total wealth is %1.2f \n',AllStats.TotalWealth.Gini) % 0.73
-fprintf('Gini for financial wealth is %1.2f \n',AllStats.K.Gini) % 0.93
+fprintf('Gini for financial wealth is %1.2f \n',AllStats.A.Gini) % 0.93
 fprintf('Gini for housing is %1.2f \n',AllStats.H.Gini) % 0.52 % NOT SURE HOW RENTAL HOUSING SERVICES ARE TREATED HERE, GUESSING JUST AS ZEROS?
 fprintf('Mean loan-to-value ratio (for borrowers) is %2.1f \n',100*AggVars.LoanToValueRatio.Mean/AggVars.Homeownership.Mean) % 0.93
 
@@ -307,7 +309,7 @@ AgeConditionalStats2=LifeCycleProfiles_FHorz_Case1(StationaryDist,Policy,FnsToEv
 figure(1)
 subplot(3,1,1); plot(Params.agejshifter+Params.agej,AgeConditionalStats2.earnings.Mean)
 title('Earnings (age conditional mean of)')
-subplot(3,1,2); plot(Params.agejshifter+Params.agej,AgeConditionalStats2.K.Mean)
+subplot(3,1,2); plot(Params.agejshifter+Params.agej,AgeConditionalStats2.A.Mean)
 title('Financial Wealth (age conditional mean of)')
 subplot(3,1,3); plot(Params.agejshifter+Params.agej,AgeConditionalStats2.H.Mean)
 title('Housing (age conditional mean of)')
