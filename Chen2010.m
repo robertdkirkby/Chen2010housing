@@ -206,11 +206,6 @@ elseif useTauchen==1
 end
 vftime=toc
 
-% vfoptions.divideandconquer=0;
-% [V2,Policy2]=ValueFnIter_Case1_FHorz(n_d,n_a,n_z,N_j,d_grid, a_grid, z_grid, pi_z, ReturnFn, Params, DiscountFactorParamNames, [], vfoptions);
-% 
-% max(abs(V(:)-V2(:)))
-% max(abs(Policy(:)-Policy2(:)))
 
 %% Age distribution
 AgeWeightParamNames={'mewj'};
