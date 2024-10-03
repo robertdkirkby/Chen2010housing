@@ -19,8 +19,9 @@ earnings=w*kappaj*z;
 
 %% Renter
 if hprime==0
+    % Chen has typo in eqns, missing Tr (only gives transfers to homeowners), both here and in his codes Tr goes to both renters and homeowners.
     % Budget constraint
-    cspend=(1+r)*a+(1-tau_p)*earnings+(1-delta_o)*h-tau_hhprime+(agej>=Jr)*b-aprime-hprime; % -hprime=0, so Chen (2010) omits it, but I leave it here
+    cspend=(1+r)*a+(1-tau_p)*earnings+(1-delta_o)*h-tau_hhprime+(agej>=Jr)*b+Tr-aprime-hprime; % -hprime=0, so Chen (2010) omits it, but I leave it here
     % cspend=c+p*d (consumption goods plus housing services)
     % Analytically, we can derive the split of cspend into c and p*d as
     c=cspend/(1+(p^(upsilon/(upsilon-1)))*((theta/(1-theta))^(1/(upsilon-1))));
@@ -42,7 +43,6 @@ if hprime==0
     end
 %% Owner
 elseif hprime>0
-    % I don't get why Chen2010 sets Tr to only go to homeowners (unimportant comment)
     % Budget constraint
     c=(1+r)*a+(1-tau_p)*earnings+(1-delta_o)*h-tau_hhprime+(agej>=Jr)*b+Tr-aprime-hprime;
     if c>0

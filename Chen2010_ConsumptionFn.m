@@ -20,7 +20,7 @@ earnings=w*kappaj*z;
 %% Renter
 if hprime==0
     % Budget constraint
-    cspend=(1+r)*a+(1-tau_p)*earnings+(1-delta_o)*h-tau_hhprime+(agej>=Jr)*b-aprime-hprime; % -hprime=0, so Chen (2010) omits it, but I leave it here
+    cspend=(1+r)*a+(1-tau_p)*earnings+(1-delta_o)*h-tau_hhprime+(agej>=Jr)*b+Tr-aprime-hprime; % -hprime=0, so Chen (2010) omits it, but I leave it here
     % cspend=c+p*d (consumption goods plus housing services)
     % Analytically, we can derive the split of cspend into c and p*d as
     c=cspend/(1+(p^(upsilon/(upsilon-1)))*((theta/(1-theta))^(1/(upsilon-1))));
